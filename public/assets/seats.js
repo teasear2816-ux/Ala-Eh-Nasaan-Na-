@@ -7,18 +7,14 @@
   const seatEndpoint = form.dataset.seatEndpoint || form.action;
   let savedCount = Number(input.value);
   let saveQueue = Promise.resolve();
+  let selectedAvailablePercentage = null;
   const status = document.getElementById('seat-update-status');
   const initialStatus = status.textContent;
-  const minus = document.getElementById('seat-minus');
-  const plus = document.getElementById('seat-plus');
-  minus.hidden = false; plus.hidden = false;
-  form.querySelector('.seat-quick-actions').hidden = false;
+  const percentageOptions = [...form.querySelectorAll('.seat-percentage-option')];
   function render() {
     const occupied = input.value === '' ? NaN : Number(input.value);
     const valid = Number.isInteger(occupied) && occupied >= 0 && occupied <= capacity;
     input.setCustomValidity(valid ? '' : `Enter a whole number from 0 to ${capacity}.`);
-    minus.disabled = !valid || occupied === 0;
-    plus.disabled = !valid || occupied === capacity;
     if (!valid) { status.textContent = `Enter a whole number from 0 to ${capacity}. Your saved count has not changed.`; return; }
     const percentage = occupied / capacity * 100;
     const available = capacity - occupied;
@@ -32,6 +28,11 @@
     const meter = document.getElementById('seat-meter');
     meter.setAttribute('aria-valuenow', occupied);
     meter.firstElementChild.style.width = `${percentage}%`;
+    percentageOptions.forEach((option) => {
+      const selected = Number(option.dataset.availablePercent) === selectedAvailablePercentage;
+      option.classList.toggle('is-selected', selected);
+      option.setAttribute('aria-pressed', String(selected));
+    });
     status.textContent = Number(input.value) === savedCount ? initialStatus : 'Updating seat availability…';
     document.querySelector('.seat-save-message')?.remove();
   }
@@ -54,14 +55,13 @@
       render();
     }).catch((error) => { status.textContent = error.message; });
   }
-  function setCount(count, save = true) { input.value = count; render(); if (save) saveCount(); }
+  function setAvailablePercentage(percentage) {
+    selectedAvailablePercentage = percentage;
+    input.value = String(Math.round(capacity * (100 - percentage) / 100));
+    render();
+    saveCount();
+  }
   form.addEventListener('submit', (event) => { event.preventDefault(); saveCount(); });
-  input.addEventListener('input', render);
-  input.addEventListener('change', saveCount);
-  minus.addEventListener('click', () => setCount(Math.max(0, Number(input.value) - 1)));
-  plus.addEventListener('click', () => setCount(Math.min(capacity, Number(input.value) + 1)));
-  document.getElementById('seat-empty').addEventListener('click', () => setCount(0));
-  document.getElementById('seat-full').addEventListener('click', () => setCount(capacity));
-  minus.disabled = Number(input.value) === 0;
-  plus.disabled = Number(input.value) === capacity;
+  percentageOptions.forEach((option) => option.addEventListener('click', () => setAvailablePercentage(Number(option.dataset.availablePercent))));
+  render();
 })();

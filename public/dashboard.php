@@ -142,15 +142,17 @@ page_start('Driver dashboard', 'dashboard');
               <span class="seat-occupied-note" id="seat-occupied-note"><?= $seatOccupied ?> occupied  -  <?= $seatStatus['percentOccupied'] ?>% occupied</span>
             </div>
             <div class="seat-controls">
-            <label class="seat-count-label" for="seat-occupied">Occupied seats</label>
-            <div class="seat-counter">
-              <button type="button" id="seat-minus" aria-label="One passenger alighted" hidden>−</button>
-              <input id="seat-occupied" name="occupied" type="number" min="0" max="<?= $seatCapacity ?>" step="1" inputmode="numeric" value="<?= $seatOccupied ?>" required aria-describedby="seat-help">
-              <button type="button" id="seat-plus" aria-label="One passenger boarded" hidden>+</button>
-            </div>
-            <p id="seat-help">Update the occupied count as passengers board or alight.</p>
-            <div class="seat-quick-actions" hidden><button type="button" id="seat-empty">All available</button><button type="button" id="seat-full">Mark full</button></div>
-            <p id="seat-update-status" role="status"><?= $seatCurrent ? 'Seat availability updates automatically when the count changes.' : 'Set the current count; seat availability updates automatically.' ?></p>
+            <input id="seat-occupied" name="occupied" type="hidden" value="<?= $seatOccupied ?>">
+            <fieldset class="seat-availability-options" aria-describedby="seat-help">
+              <legend>Set available seats</legend>
+              <div class="seat-percentage-options">
+                <?php foreach ([100, 75, 50, 25, 0] as $availablePercent): ?>
+                  <button type="button" class="seat-percentage-option" data-available-percent="<?= $availablePercent ?>" aria-pressed="false"><?= $availablePercent ?>% <span>available</span></button>
+                <?php endforeach; ?>
+              </div>
+            </fieldset>
+            <p id="seat-help">Choose the percentage of seats currently available. Your selection updates availability automatically.</p>
+            <p id="seat-update-status" role="status"><?= $seatCurrent ? 'Choose an availability percentage to update seats.' : 'Set the current availability percentage.' ?></p>
             <div class="seat-color-guide" aria-label="Occupancy color guide"><span class="seat-color-green">0–49% occupied</span><span class="seat-color-yellow">50–69%</span><span class="seat-color-orange">70–89%</span><span class="seat-color-red">90–100%</span></div>
             </div>
           </form>
