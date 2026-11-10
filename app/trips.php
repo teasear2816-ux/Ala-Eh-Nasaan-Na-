@@ -18,6 +18,22 @@ function driver_trip(int $driverId): ?array
     return $query->fetch() ?: null;
 }
 
+function active_driver_trip(int $driverId): ?array
+{
+    $query = db()->prepare(
+        "SELECT t.id, t.started_at, dpa.route_name
+         FROM trips t
+         INNER JOIN driver_pickup_assignments dpa
+            ON dpa.driver_id = t.driver_id
+           AND dpa.route_key <> ''
+           AND dpa.route_revision > 0
+         WHERE t.driver_id = :driver_id AND t.trip_status = 'active'
+         ORDER BY t.started_at DESC LIMIT 1"
+    );
+    $query->execute(['driver_id' => $driverId]);
+    return $query->fetch() ?: null;
+}
+
 function save_driver_trip(int $driverId, mixed $status, mixed $revision): array
 {
     $pdo = db();

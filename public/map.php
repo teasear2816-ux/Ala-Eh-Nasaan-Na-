@@ -19,19 +19,26 @@ if ($mapDriver !== null) {
 $mapPickupError = '';
 $mapPickupFlash = $_SESSION['map_pickup_flash'] ?? '';
 unset($_SESSION['map_pickup_flash']);
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'pickup') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($_POST['action'] ?? '', ['pickup', 'clear'], true)) {
     verify_csrf_token();
     if ($mapDriver === null) {
         http_response_code(401);
         $mapPickupError = 'Sign in as a driver to save a pickup area.';
     } else {
-        [$code, $message] = save_driver_route_and_pickup(
-            (int) $mapDriver['id'],
-            $_POST['route_key'] ?? null,
-            $_POST['location_key'] ?? null,
-            $_POST['availability'] ?? null,
-            $_POST['pickup_revision'] ?? null
-        );
+        if ($_POST['action'] === 'clear') {
+            [$code, $message] = clear_driver_route_and_pickup(
+                (int) $mapDriver['id'],
+                $_POST['pickup_revision'] ?? null
+            );
+        } else {
+            [$code, $message] = save_driver_route_and_pickup(
+                (int) $mapDriver['id'],
+                $_POST['route_key'] ?? null,
+                $_POST['location_key'] ?? null,
+                $_POST['availability'] ?? null,
+                $_POST['pickup_revision'] ?? null
+            );
+        }
         if ($code === 200) {
             $_SESSION['map_pickup_flash'] = $message;
             redirect('map.php#map-pickup-area');

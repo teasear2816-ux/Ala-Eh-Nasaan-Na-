@@ -1,12 +1,12 @@
 (() => {
   const form = document.querySelector('#vehicle-form');
-  if (!(form instanceof HTMLFormElement)) return;
-
-  const fields = {
+  const canEditVehicle = form instanceof HTMLFormElement;
+  const vehicleApi = canEditVehicle ? form.dataset.api : 'api/vehicle.php';
+  const fields = canEditVehicle ? {
     plate_number: form.elements.namedItem('plate_number'),
     capacity: form.elements.namedItem('capacity'),
     route_assignment: form.elements.namedItem('route_assignment'),
-  };
+  } : null;
   const statusBanner = document.querySelector('#vehicle-status-banner');
   const statusTitle = document.querySelector('#vehicle-status-title');
   const statusMessage = document.querySelector('#vehicle-status-message');
@@ -78,7 +78,7 @@
   };
 
   const loadVehicle = async () => {
-    const response = await fetch(form.dataset.api, {
+    const response = await fetch(vehicleApi, {
       headers: { Accept: 'application/json' },
       credentials: 'same-origin',
     });
@@ -91,12 +91,19 @@
       vehicle?.pending_plate_number || vehicle?.pending_capacity || vehicle?.pending_route_assignment,
     ));
 
-    if (vehicle) {
+    if (vehicle && fields) {
       fields.plate_number.value = vehicle.pending_plate_number || vehicle.plate_number || '';
       fields.capacity.value = vehicle.pending_capacity || vehicle.capacity || '';
       fields.route_assignment.value = vehicle.pending_route_assignment || vehicle.route_assignment || '';
     }
   };
+
+  if (!canEditVehicle || !fields || !(form instanceof HTMLFormElement)) {
+    loadVehicle().catch((error) => {
+      setStatus('not_submitted', false);
+    });
+    return;
+  }
 
   for (const [field, errorId] of Object.entries({
     plate_number: 'plate-error',

@@ -62,13 +62,14 @@
 @keyframes jeepney-exhaust { 0% { transform: translate(0, 0) scale(.6); opacity: .5; } 100% { transform: translate(22px, -13px) scale(2.2); opacity: 0; } }
 @keyframes jeepney-tap-hint { 0% { box-shadow: 0 0 0 0 rgb(96 165 250 / 35%); } 100% { box-shadow: 0 0 0 9px rgb(96 165 250 / 0%); } }
 @media (max-width: 600px) {
-  .login-intro { --vehicle-width: 148px; --road-y: 62%; }
+  .login-intro { --vehicle-width: 148px; --road-y: 69%; }
   .intro-brand { left: 24px; }
   .intro-brand strong { font-size: 14px; }
   .intro-brand img { width: 42px; height: 42px; }
-  .intro-copy { top: 27%; }
+  .intro-copy { top: 24%; }
   .intro-copy h1 { max-width: 300px; margin: 0 auto 14px; }
   .intro-copy p { max-width: 270px; margin: 0 auto; }
+  .intro-tap-cue { display: none; }
   .intro-caption { top: calc(var(--road-y) + 66px); }
 }
 @media (max-height: 500px) {

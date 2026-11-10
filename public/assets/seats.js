@@ -1,7 +1,20 @@
 (() => {
   'use strict';
   const form = document.getElementById('seat-form');
-  if (!form) return;
+  const routeLockedButtons = [...document.querySelectorAll('[data-route-required="true"]')];
+  const routeReminder = document.getElementById('seat-route-required');
+
+  if (!(form instanceof HTMLFormElement)) {
+    routeLockedButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (routeReminder instanceof HTMLElement) {
+          routeReminder.textContent = 'Seat availability is locked. Save your route first, then you can update available seats.';
+          routeReminder.focus();
+        }
+      });
+    });
+    return;
+  }
   const input = document.getElementById('seat-occupied');
   const capacity = Number(form.dataset.capacity);
   const seatEndpoint = form.dataset.seatEndpoint || form.action;

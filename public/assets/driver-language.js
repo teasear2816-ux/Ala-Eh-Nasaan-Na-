@@ -197,7 +197,6 @@
     'View on map': 'Tingnan sa mapa',
     'Manual location confirmation needed': 'Kailangan ng manu-manong pagkumpirma ng lokasyon',
     'Locations without verified coordinates remain listed here and are flagged for manual confirmation before navigation is enabled.': 'Mananatili rito ang mga lokasyong walang beripikadong coordinate at mamarkahan para sa manu-manong pagkumpirma bago paganahin ang nabigasyon.',
-    'Coverage: Mabini ↔ Batangas City proper and Grand Terminal. Routes are community-mapped by': 'Saklaw: Mabini ↔ sentro ng Batangas City at Grand Terminal. Minapa ng komunidad ang mga ruta sa tulong ng',
     'Loading…': 'Naglo-load…',
     'Unable to load your vehicle details.': 'Hindi ma-load ang mga detalye ng iyong sasakyan.',
     'Unable to submit your vehicle details.': 'Hindi maipasa ang mga detalye ng iyong sasakyan.',
@@ -282,7 +281,6 @@
     '70–89%': '70–89% okupado',
     '90–100%': '90–100% okupado',
     ' / seats available': ' / bakanteng upuan',
-    'follow the route sign and current road signs.': 'sundin ang karatula ng ruta at mga kasalukuyang karatula sa kalsada.',
     'No drivers are currently marked available at this area.': 'Walang drayber na kasalukuyang may biyahe sa lugar na ito.',
     'Your journey is saved until trip status is Out.': 'Naka-save ang iyong biyahe hanggang maging Walang biyahe ang estado.',
     'Save area to publish your selection.': 'I-save ang lugar upang mailathala ang iyong pinili.',
@@ -312,7 +310,6 @@
     ['Nearest mapped terminal:', 'Pinakamalapit na minapang terminal:'],
     ['mapped locations shown', 'minapang lokasyon ang ipinapakita'],
     ['listed locations still need an exact pin', 'nakalistang lokasyon ang nangangailangan pa ng eksaktong pin'],
-    ['follow the route sign and current road signs.', 'sundin ang karatula ng ruta at mga kasalukuyang karatula sa kalsada.'],
   ];
 
   const translateText = (node) => {

@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 || $imageInfo[0] * $imageInfo[1] > 16000000) {
                 $errors['photo'] = 'Use a JPEG, PNG, or WebP image up to 5 MB.';
             } else {
-                if (strtolower((string) (getenv('PROFILE_PHOTO_STORAGE') ?: 'filesystem')) === 'database') {
+                if (strtolower(environment_value('PROFILE_PHOTO_STORAGE', 'filesystem')) === 'database') {
                     $imageContents = file_get_contents($upload['tmp_name']);
                     if ($imageContents === false || $imageContents === '') {
                         throw new RuntimeException('Unable to read the uploaded driver profile photo.');
@@ -135,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $notice = (string) ($_SESSION['driver_profile_notice'] ?? $notice);
 unset($_SESSION['driver_profile_notice']);
-if (strtolower((string) (getenv('PROFILE_PHOTO_STORAGE') ?: 'filesystem')) === 'database') {
+if (strtolower(environment_value('PROFILE_PHOTO_STORAGE', 'filesystem')) === 'database') {
     $photoVersion = driver_photo_database_version($driverId);
     $profilePhotoUrl = $photoVersion === null
         ? null
@@ -167,7 +167,7 @@ page_start('My profile', 'driver-profile');
       <div class="driver-profile-card-heading">
         <span class="profile-photo-preview" aria-hidden="true">
           <?php if ($profilePhotoUrl !== null): ?><img src="<?= h($profilePhotoUrl) ?>" alt="">
-          <?php else: ?><?= h(mb_strtoupper(mb_substr((string) $profile['full_name'], 0, 1))) ?><?php endif; ?>
+          <?php else: ?><?= h(account_initial((string) $profile['full_name'])) ?><?php endif; ?>
         </span>
         <div><h2 id="profile-photo-title">Profile photo</h2><p>Upload a photo to personalize your driver account.</p></div>
       </div>

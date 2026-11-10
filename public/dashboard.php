@@ -4,6 +4,12 @@ require_once __DIR__ . '/../app/bootstrap.php';
 $driver = require_driver();
 require_once __DIR__ . '/../app/seats.php';
 require_once __DIR__ . '/../app/trips.php';
+require_once __DIR__ . '/../app/driver-routes.php';
+$routeSetup = driver_route_assignment((int) $driver['id']);
+$routeSaved = $routeSetup !== null
+    && !empty($routeSetup['route_key'])
+    && (int) ($routeSetup['route_revision'] ?? 0) > 0;
+$activeTrip = $routeSaved ? active_driver_trip((int) $driver['id']) : null;
 $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
 $isSeatAjax = $isPost && (
     ($_POST['ajax'] ?? '') === '1'
@@ -53,6 +59,11 @@ if ($isPost && $action === 'seats') {
         if (!can_update_seats($currentSeats)) {
             http_response_code(403);
             $seatError = 'A verified driver account and approved jeepney capacity are required.';
+} elseif (($currentRoute = driver_route_assignment((int) $driver['id'])) === null
+    || empty($currentRoute['route_key'])
+    || (int) ($currentRoute['route_revision'] ?? 0) < 1) {
+            http_response_code(403);
+            $seatError = 'Save your route before updating available seats.';
         } elseif (!is_string($occupiedInput) || !ctype_digit($occupiedInput) || strlen($occupiedInput) > 10 || (int) $occupiedInput > (int) $currentSeats['capacity']) {
             http_response_code(422);
             $seatError = 'Occupied seats must be a whole number from 0 to your jeepney capacity.';
@@ -128,6 +139,17 @@ page_start('Driver dashboard', 'dashboard');
         <?php if (!$seatEnabled): ?>
           <p><?= $seats && $seats['verification_status'] === 'verified' ? 'Add your jeepney and have its passenger capacity approved before updating seats.' : 'Seat updates become available after your driver account and jeepney are approved.' ?></p>
           <a href="jeepney-profile.php">View my jeepney</a>
+        <?php elseif (!$routeSaved): ?>
+          <fieldset class="seat-availability-options" aria-describedby="seat-route-required">
+            <legend>Set available seats</legend>
+            <div class="seat-percentage-options">
+              <?php foreach ([100, 75, 50, 25, 0] as $availablePercent): ?>
+                <button type="button" class="seat-percentage-option is-route-locked" aria-disabled="true" data-route-required="true"><?= $availablePercent ?>% <span>available</span></button>
+              <?php endforeach; ?>
+            </div>
+          </fieldset>
+          <p id="seat-route-required" role="status" aria-live="polite" tabindex="-1">Save your route before updating available seats.</p>
+          <a class="button button-primary" href="map.php#map-pickup-area">Set up route</a>
         <?php else: ?>
           <form method="post" action="dashboard.php#available-seats" id="seat-form" data-seat-endpoint="api/seat-availability.php" data-capacity="<?= $seatCapacity ?>">
             <?= csrf_field() ?>
@@ -156,6 +178,25 @@ page_start('Driver dashboard', 'dashboard');
             <div class="seat-color-guide" aria-label="Occupancy color guide"><span class="seat-color-green">0–49% occupied</span><span class="seat-color-yellow">50–69%</span><span class="seat-color-orange">70–89%</span><span class="seat-color-red">90–100%</span></div>
             </div>
           </form>
+        <?php endif; ?>
+      </div>
+    </details>
+    <details class="dashboard-dropdown trip-tracking-dropdown" id="trip-tracking" <?= $activeTrip !== null ? 'open' : '' ?>>
+      <summary><svg class="ui-icon" aria-hidden="true"><use href="assets/icons.svg#bus"></use></svg><span>Trip tracking<?php if ($activeTrip !== null): ?><small class="trip-badge trip-in_transit">In progress</small><?php elseif ($routeSaved): ?><small class="trip-badge trip-available">Ready to start</small><?php endif; ?></span><svg class="ui-icon dropdown-chevron" aria-hidden="true"><use href="assets/icons.svg#chevron-down"></use></svg></summary>
+      <div class="dashboard-dropdown-content">
+        <?php if (!$routeSaved): ?>
+          <p>Save a route in the Jeepney Map before starting a tracked trip.</p>
+          <a class="button button-primary" href="map.php#map-pickup-area">Save route</a>
+        <?php elseif ($activeTrip !== null): ?>
+          <div class="trip-current trip-in_transit">
+            <span>TRIP IN PROGRESS</span>
+            <strong><?= h((string) $activeTrip['route_name']) ?></strong>
+            <p>Location sharing is active for authorized administrators.</p>
+          </div>
+          <a class="button button-primary" href="driver-trip.php">Manage trip</a>
+        <?php else: ?>
+          <p>Your saved route is ready. Start location sharing when you are ready to begin.</p>
+          <a class="button button-primary" href="driver-trip.php">Start trip &amp; share location</a>
         <?php endif; ?>
       </div>
     </details>

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../app/bootstrap.php';
 $driver = require_driver();
+$jeepneyProfileScriptVersion = (string) filemtime(__DIR__ . '/assets/jeepney-profile.js');
 
 page_start('My jeepney', 'jeepney-profile');
 ?>
@@ -30,6 +31,7 @@ page_start('My jeepney', 'jeepney-profile');
   </div>
 
   <div class="vehicle-layout">
+    <?php if (($driver['verification_status'] ?? '') !== 'verified'): ?>
     <section class="vehicle-card">
       <div class="vehicle-card-heading">
         <span class="vehicle-card-icon" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#bus"></use></svg></span>
@@ -59,6 +61,7 @@ page_start('My jeepney', 'jeepney-profile');
         <p class="vehicle-form-message" id="vehicle-form-message" role="status" aria-live="polite"></p>
       </form>
     </section>
+    <?php endif; ?>
 
     <aside class="vehicle-approved-card">
       <div class="vehicle-approved-heading"><span class="vehicle-approved-icon" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#check"></use></svg></span><div><h2>Current approved details</h2><p>Only verified details are active.</p></div></div>
@@ -69,5 +72,5 @@ page_start('My jeepney', 'jeepney-profile');
     </aside>
   </div>
 </section>
-<script src="assets/jeepney-profile.js" defer></script>
+<script src="assets/jeepney-profile.js?v=<?= h($jeepneyProfileScriptVersion) ?>" defer></script>
 <?php page_end(); ?>

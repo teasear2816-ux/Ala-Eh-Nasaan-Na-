@@ -31,15 +31,37 @@ function load_local_environment(): void
         'DB_SSL_CA_BASE64',
         'SESSION_COOKIE_SECURE',
         'SESSION_DRIVER',
+        'PROFILE_PHOTO_STORAGE',
     ];
     foreach ($values as $name => $value) {
-        if (in_array($name, $allowedNames, true) && is_string($value) && getenv($name) === false) {
+        if (function_exists('putenv') && in_array($name, $allowedNames, true) && is_string($value) && getenv($name) === false) {
             putenv($name . '=' . $value);
         }
     }
 }
 
 load_local_environment();
+
+function environment_value(string $name, string $default = ''): string
+{
+    $environmentValue = getenv($name);
+    if ($environmentValue !== false && $environmentValue !== '') {
+        return $environmentValue;
+    }
+
+    static $values = null;
+    if ($values === null) {
+        $environmentFile = dirname(__DIR__) . '/.env';
+        $parsedValues = is_file($environmentFile)
+            ? parse_ini_file($environmentFile, false, INI_SCANNER_RAW)
+            : [];
+        $values = is_array($parsedValues) ? $parsedValues : [];
+    }
+
+    return isset($values[$name]) && is_string($values[$name]) && $values[$name] !== ''
+        ? $values[$name]
+        : $default;
+}
 
 set_exception_handler(static function (Throwable $exception): void {
     error_log((string) $exception);
@@ -48,8 +70,7 @@ set_exception_handler(static function (Throwable $exception): void {
     echo 'An unexpected server error occurred.';
 });
 
-$secureCookieSetting = getenv('SESSION_COOKIE_SECURE');
-$secureCookieSetting = strtolower($secureCookieSetting === false ? 'true' : $secureCookieSetting);
+$secureCookieSetting = strtolower(environment_value('SESSION_COOKIE_SECURE', 'true'));
 $secureCookie = !in_array($secureCookieSetting, ['false', '0', 'off'], true);
 
 ini_set('session.use_strict_mode', '1');
@@ -81,6 +102,15 @@ require_once __DIR__ . '/vehicles.php';
 function h(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function account_initial(string $name): string
+{
+    if (function_exists('mb_substr') && function_exists('mb_strtoupper')) {
+        return mb_strtoupper(mb_substr($name, 0, 1));
+    }
+
+    return strtoupper(substr($name, 0, 1));
 }
 
 function redirect(string $path): never
@@ -198,7 +228,13 @@ function page_start(string $title, string $page = ''): void
     $safePage = h($page);
     $language = current_driver() !== null ? driver_language() : 'en';
     $theme = current_driver() !== null ? driver_theme() : 'light';
-    $stylesVersion = (string) filemtime(__DIR__ . '/../public/assets/styles.css');
+    // InfinityFree serves the public directory as its document root, while local
+    // development keeps it under /public. Support both layouts for cache busting.
+    $stylesPath = __DIR__ . '/../public/assets/styles.css';
+    if (!is_file($stylesPath)) {
+        $stylesPath = __DIR__ . '/../assets/styles.css';
+    }
+    $stylesVersion = (string) filemtime($stylesPath);
     $isAuthenticated = current_driver() !== null || current_admin() !== null;
     $layoutClass = $isAuthenticated ? 'has-sidebar' : '';
     $headerProfile = '';
@@ -208,9 +244,9 @@ function page_start(string $title, string $page = ''): void
     if (current_admin() === null && current_driver() !== null) {
         $profileName = h((string) current_driver()['full_name']);
         $profileRole = current_driver()['verification_status'] === 'verified' ? 'Verified driver' : 'Driver';
-        $profileInitial = h(mb_strtoupper(mb_substr((string) current_driver()['full_name'], 0, 1)));
+        $profileInitial = h(account_initial((string) current_driver()['full_name']));
         $driverId = (int) current_driver()['id'];
-        if (strtolower((string) (getenv('PROFILE_PHOTO_STORAGE') ?: 'filesystem')) === 'database') {
+        if (strtolower(environment_value('PROFILE_PHOTO_STORAGE', 'filesystem')) === 'database') {
             $photoVersion = driver_photo_database_version($driverId);
             $profileAvatar = $photoVersion === null
                 ? $profileInitial
@@ -244,7 +280,7 @@ function page_start(string $title, string $page = ''): void
 HTML;
     } elseif (current_admin() !== null) {
         $adminAccountName = h((string) (current_admin()['full_name'] ?? current_admin()['email'] ?? 'Administrator'));
-        $adminInitial = h(mb_strtoupper(mb_substr($adminAccountName, 0, 1)));
+        $adminInitial = h(account_initial($adminAccountName));
         $logoutToken = csrf_field();
         $headerProfile = <<<HTML
       <div class="header-account">
@@ -364,6 +400,8 @@ HTML;
     </header>
     <main class="site-main" id="main-content">
 HTML;
+    } elseif (defined('HIDE_SITE_FOOTER') && HIDE_SITE_FOOTER) {
+        echo "</main>\n</body>\n</html>\n";
     } else {
         // Regular header for non-authenticated pages
         echo <<<HTML

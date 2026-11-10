@@ -15,6 +15,5 @@
     </div>
     <div><div id="live-route-map" aria-label="Live driver position and next-stop map"></div><button type="button" class="button button-outline button-small" id="live-route-follow" disabled>Follow my location</button></div>
   </div>
-  <p class="live-route-note">Keep this page open while tracking on your GPS-enabled phone. GPS needs location permission and HTTPS (or localhost). Coverage: mapped BW-02 routes between Bauan, Batangas City proper, and Grand Terminal. Stops are community-mapped; follow your approved service route. This view does not send your location to commuters or save location history.</p>
   <a href="driver-route.php">Open route planner and assigned route <svg class="ui-icon" aria-hidden="true"><use href="assets/icons.svg#arrow"></use></svg></a>
 </section>

@@ -94,3 +94,68 @@
   .passenger-login-page .about-panel { padding: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .passenger-page *, .passenger-page *::before, .passenger-page *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Keep the mobile sign-in flow focused and the header on one compact row. */
+@media (max-width:650px) {
+  .passenger-login-page .header-inner {
+    min-height:64px;
+    flex-wrap:nowrap;
+    gap:8px;
+    padding:10px 0;
+  }
+  .passenger-login-page .header-portal-nav {
+    order:0;
+    flex:0 0 auto;
+    width:auto;
+    gap:8px;
+  }
+  .passenger-login-page .driver-dropdown summary {
+    gap:3px;
+    padding:7px 0;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .passenger-login-page .driver-dropdown summary svg { width:11px; height:11px; }
+  .passenger-login-page .brand {
+    flex:1 1 auto;
+    justify-content:flex-start;
+    gap:7px;
+    min-width:0;
+  }
+  .passenger-login-page .brand-mark { width:34px; height:34px; flex:0 0 34px; }
+  .passenger-login-page .brand-name { font-size:11px; }
+  .passenger-login-page .brand-name span { font-size:11px; }
+  .passenger-login-page .auth-layout {
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    padding:16px 0 28px;
+  }
+  .passenger-login-page .auth-panel {
+    order:0;
+    width:100%;
+    padding:20px;
+    background:#fff;
+    border:1px solid rgba(17, 45, 78, .10);
+    border-radius:16px;
+    box-shadow:0 12px 30px rgba(20, 50, 86, .10);
+  }
+  .passenger-login-page .form-security { display:none; }
+  .passenger-login-page .auth-aside {
+    width:100%;
+    min-height:0;
+    padding:18px 20px;
+    border-radius:14px;
+  }
+  .passenger-login-page .auth-aside .eyebrow { font-size:10px; }
+  .passenger-login-page .auth-aside h1 {
+    margin:8px 0 6px;
+    font-size:clamp(24px, 7.5vw, 30px);
+    line-height:1.12;
+  }
+  .passenger-login-page .auth-aside > p {
+    max-width:none;
+    font-size:12px;
+    line-height:1.5;
+  }
+}

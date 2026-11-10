@@ -59,8 +59,7 @@ $journeyStorageKey = $isDriverRouteMap && isset($driver['id'])
     </div>
     <div class="route-map-panel<?= isset($mapDriver) && $mapDriver !== null ? ' has-driver-pickup' : '' ?>">
       <div class="map-explore-bar">
-        <div><label for="route-service">Explore a jeepney route</label><select id="route-service" disabled><option value="">All mapped routes</option></select></div>
-        <button type="button" class="button button-outline button-small" id="route-view-all" disabled>Show all stops</button>
+        <div hidden><label for="route-service">Explore a jeepney route</label><select id="route-service" disabled><option value="">All mapped routes</option></select></div>
       </div>
       <?php if (isset($mapDriver) && $mapDriver !== null): ?>
         <section class="map-driver-pickup" id="map-pickup-area" aria-labelledby="map-pickup-title">
@@ -123,6 +122,5 @@ $journeyStorageKey = $isDriverRouteMap && isset($driver['id'])
     </div>
     <p class="route-map-help">Locations without verified coordinates remain listed here and are flagged for manual confirmation before navigation is enabled.</p>
   </section>
-  <p class="route-planner-note">Coverage: Mabini ↔ Batangas City proper and Grand Terminal. Routes are community-mapped by <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>; follow the route sign and current road signs.</p>
 </section>
 <script id="map-location-data" type="application/json"><?= json_encode($mapLocations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>

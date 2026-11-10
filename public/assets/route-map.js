@@ -573,7 +573,8 @@
         button.addEventListener('click', () => { const point = points.get(button.dataset.mapLocation); if (point) focusPoint(point); });
       });
       serviceSelect.disabled = false;
-      document.getElementById('route-view-all').disabled = false;
+      const viewAllButton = document.getElementById('route-view-all');
+      if (viewAllButton) viewAllButton.disabled = false;
       window.setInterval(() => refreshPickupAssignments(true).catch(() => {}), 30000);
     } catch (error) {
       locationsStatus.textContent = 'Map locations could not load. Reload the page to try again.';
@@ -773,18 +774,20 @@
     exploreService(driverRouteSelection?.value || serviceSelect.value);
   });
   document.getElementById('map-pickup-clear')?.addEventListener('click', () => {
-    driverRouteSelection.value = '';
-    if (driverRouteKeyInput) driverRouteKeyInput.value = '';
-    serviceSelect.value = '';
-    filterAssignedAreas('');
-    exploreService('');
-    if (assignedPreviewStatus) assignedPreviewStatus.textContent = 'Selections cleared. Your saved assignment remains unchanged.';
+    const pickupForm = document.querySelector('.map-driver-pickup-form');
+    const action = pickupForm?.querySelector('input[name="action"]');
+    if (!(pickupForm instanceof HTMLFormElement) || !(action instanceof HTMLInputElement)) return;
+    action.value = 'clear';
+    pickupForm.submit();
   });
-  document.getElementById('route-view-all').addEventListener('click', () => {
-    document.getElementById('route-terminals').checked = true;
-    document.getElementById('route-boarding').checked = true;
-    exploreService('');
-  });
+  const viewAllButton = document.getElementById('route-view-all');
+  if (viewAllButton) {
+    viewAllButton.addEventListener('click', () => {
+      document.getElementById('route-terminals').checked = true;
+      document.getElementById('route-boarding').checked = true;
+      exploreService('');
+    });
+  }
   ['route-terminals', 'route-boarding'].forEach((id) => document.getElementById(id).addEventListener('change', renderPoints));
   terminalSearch?.addEventListener('input', renderPoints);
   areaFilter?.addEventListener('change', renderPoints);

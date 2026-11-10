@@ -683,6 +683,7 @@ h1, h2, h3, h4, h5, h6 {
 .dashboard-dropdown-content p { margin: 0 0 12px; line-height: 1.6; }
 .dashboard-dropdown-content p:last-child { margin-bottom: 0; }
 .dashboard-dropdown-content a { display: inline-flex; align-items: center; gap: 8px; color: var(--blue-600); font-weight: 600; }
+.dashboard-dropdown-content a.button-primary { color: #fff; }
 .dashboard-dropdown[open] > summary { background: var(--blue-50); }
 .dashboard-navigation > .seats-dropdown { order: -1; }
 .dashboard-panels { margin: -8px 0 28px; width: 100%; }
@@ -693,6 +694,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Dashboard controls are plain tabs rather than cards. */
 .dashboard-navigation {
   border-bottom: 1px solid var(--line);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .dashboard-navigation .dashboard-dropdown {
   border: 0;
@@ -1977,6 +1979,28 @@ input, select, textarea { min-width: 0; }
 .route-map-caption { display: flex; grid-column: 1; grid-row: 4; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0; padding: 14px; color: var(--muted); font-size: 12px; }
 .route-legend-start, .route-legend-end { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #2563eb; color: #fff; font-size: 10px; font-weight: 700; }
 .route-legend-end { background: #047857; margin-left: 8px; }
+
+/* Match the driver sign-in experience to the passenger portal without changing authentication. */
+.page-login .header-portal-nav { display: flex; align-items: center; gap: 26px; }
+.page-login .header-portal-nav a { color: var(--blue-900); font-size: 13px; font-weight: 600; text-decoration: none; }
+.page-login .header-portal-nav a:hover { color: var(--blue-600); }
+.page-login .auth-panel { padding: 28px; border: 1px solid rgb(17 45 78 / 10%); border-radius: 18px; background: var(--white); box-shadow: 0 12px 30px rgb(20 50 86 / 10%); }
+.page-login .form-switch { margin-bottom: 0; }
+@media (max-width: 650px) {
+  .page-login .header-inner { min-height: 64px; flex-wrap: nowrap; gap: 10px; padding: 10px 0; }
+  .page-login .brand { flex: 1 1 auto; min-width: 0; }
+  .page-login .brand-mark { width: 34px; height: 34px; flex-basis: 34px; }
+  .page-login .brand-name { font-size: 11px; }
+  .page-login .brand-name span { font-size: 11px; }
+  .page-login .header-portal-nav { flex: 0 0 auto; gap: 10px; }
+  .page-login .header-portal-nav a { font-size: 11px; white-space: nowrap; }
+  .page-login .auth-layout { display: flex; flex-direction: column; gap: 16px; padding: 16px 0 28px; }
+  .page-login .auth-aside { width: 100%; min-height: 0; padding: 18px 20px; border-radius: 14px; }
+  .page-login .auth-aside h1 { margin: 8px 0 6px; font-size: clamp(24px, 7.5vw, 30px); line-height: 1.12; }
+  .page-login .auth-aside > p { max-width: none; font-size: 12px; line-height: 1.5; }
+  .page-login .aside-note { display: none; }
+  .page-login .auth-panel { width: 100%; max-width: none; padding: 20px; border-radius: 16px; }
+}
 .route-legend-line { width: 24px; height: 3px; background: #2563eb; margin-left: 8px; }
 .route-map-pin { display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; color: #fff; background: #2563eb; box-shadow: 0 2px 8px #0f172a66; font-size: 14px; font-weight: 700; }
 .route-map-pin-end { background: #047857; }
@@ -3410,6 +3434,9 @@ html[data-theme="dark"] .theme-option:has(input:checked) { background: #1b3658; 
 .seat-percentage-option:hover { border-color: var(--blue-500); background: #f2f6fc; }
 .seat-percentage-option:focus-visible { outline: 2px solid var(--blue-600); outline-offset: 2px; }
 .seat-percentage-option.is-selected { border-color: var(--blue-600); background: #eff6ff; box-shadow: inset 0 0 0 1px var(--blue-600); color: var(--blue-800); }
+.seat-percentage-option.is-route-locked,
+.seat-percentage-option[aria-disabled="true"] { cursor: not-allowed; opacity: .5; filter: grayscale(.35); }
+.seat-percentage-option.is-route-locked:hover { border-color: var(--line); background: white; }
 .seats-dropdown .seat-save { width: 100%; margin-top: 5px; padding: 12px 8px; font-size: 12px; }
 .seats-dropdown #seat-help, .seats-dropdown #seat-update-status { font-size: 11px; line-height: 1.6; margin: 10px 0; }
 .seat-color-guide { display: flex; flex-wrap: wrap; gap: 5px; padding-top: 10px; border-top: 1px solid var(--line); }
@@ -3455,6 +3482,37 @@ input, select, textarea { max-width: 100%; }
   .vehicle-layout, .driver-profile-layout { grid-template-columns: minmax(0, 1fr); }
   .header-inner { flex-wrap: wrap; gap: 16px; padding-block: 16px; }
   .site-nav { flex-wrap: wrap; gap: 16px; }
+}
+
+/* Jeepney Map: keep the controls readable when the map no longer has room for a sidebar. */
+@media (max-width: 980px) {
+  .route-map-panel.has-driver-pickup { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto auto; }
+  .route-map-panel.has-driver-pickup #driver-route-map { grid-column: 1; grid-row: 2; min-height: 0; height: clamp(360px, 58svh, 520px); }
+  .route-map-panel.has-driver-pickup .map-driver-pickup { grid-column: 1; grid-row: 3; height: auto; border-top: 1px solid var(--line); border-left: 0; }
+  .route-map-panel.has-driver-pickup .map-point-filters { grid-column: 1; grid-row: 4; }
+  .route-map-panel.has-driver-pickup .route-map-caption { grid-column: 1; grid-row: 5; }
+  .route-map-panel.has-driver-pickup #map-locations-status { grid-column: 1; grid-row: 6; }
+}
+
+@media (max-width: 600px) {
+  .map-driver-pickup-actions { flex-direction: column; }
+  .map-driver-pickup-actions .button { width: 100%; min-height: 44px; }
+  .map-point-filters { align-items: flex-start; gap: 10px 16px; padding: 14px 16px 0; }
+  .terminal-area-legend { width: 100%; margin-left: 0; }
+  #map-locations-status { padding-inline: 16px; }
+}
+
+/* Keep the map's local-stop cards compact on phones without changing desktop cards. */
+@media (max-width: 768px) {
+  .map-location-directory { padding: 14px 14px 12px; }
+  .map-location-grid { gap: 8px; }
+  .map-location-card { gap: 10px; padding: 12px; border-radius: 10px; }
+  .map-directory-icon { width: 30px; height: 30px; border-radius: 8px; }
+  .map-directory-icon .ui-icon { width: 16px; height: 16px; }
+  .map-location-area { font-size: 9px; }
+  .map-location-card h4 { margin: 4px 0; font-size: 13px; }
+  .map-location-card p { margin-bottom: 6px; font-size: 11px; line-height: 1.45; }
+  .map-location-card .map-location-link { min-height: 36px; font-size: 11px; }
 }
 
 @media (max-width: 768px) {
@@ -3568,7 +3626,7 @@ input, select, textarea { max-width: 100%; }
   .stat-label { font-size: 12px; }
 }
 @media (max-width: 768px) {
-  .leaflet-touch .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; }
+  .leaflet-touch .leaflet-bar a { width: 32px; height: 32px; line-height: 32px; font-size: 20px; }
   .leaflet-popup-content { max-width: calc(100vw - 112px); overflow-wrap: anywhere; }
   .map-stop-popup { min-width: 0; }
 }

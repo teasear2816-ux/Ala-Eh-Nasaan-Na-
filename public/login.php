@@ -1,7 +1,14 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/../app/bootstrap.php';
-require_once __DIR__ . '/../app/admin-auth.php';
+define('HIDE_SITE_FOOTER', true);
+// The public folder is flattened into htdocs on InfinityFree, but remains
+// nested locally. Resolve the application directory in either deployment.
+$appDirectory = __DIR__ . '/../app';
+if (!is_dir($appDirectory)) {
+    $appDirectory = __DIR__ . '/app';
+}
+require_once $appDirectory . '/bootstrap.php';
+require_once $appDirectory . '/admin-auth.php';
 
 if (current_admin() !== null) {
     require_admin();
@@ -69,17 +76,17 @@ page_start('Driver login', 'login');
 ?>
 <section class="auth-layout">
   <div class="auth-aside">
-    <span class="eyebrow eyebrow-light"><span class="eyebrow-dot"></span> WELCOME BACK</span>
-    <h1>Good to have<br>you <span>back.</span></h1>
-    <p>Pick up right where you left off. Your driver application is just a sign-in away.</p>
-    <div class="aside-note"><span class="aside-note-icon" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#check"></use></svg></span><span><strong>One place for your journey</strong><small>Check your application status anytime.</small></span></div>
+    <span class="eyebrow eyebrow-light"><span class="eyebrow-dot"></span> YOUR EVERYDAY JOURNEY</span>
+    <h1>Your next ride.<br><span>A little easier.</span></h1>
+    <p>Access your driver tools and keep your journey moving with Ala-Eh Nasaan Na?</p>
+    <div class="aside-note"><span class="aside-note-icon" aria-hidden="true">&#8599;</span><span><strong>Made for every driver</strong><small>Your driver dashboard, all in one place.</small></span></div>
     <div class="aside-decoration" aria-hidden="true">A</div>
   </div>
   <div class="auth-panel">
     <div class="form-heading">
       <span class="form-kicker">DRIVER PORTAL</span>
-      <h2>Sign in to your account</h2>
-      <p>Sign in with your driver or administrator account.</p>
+      <h2>Welcome back.</h2>
+      <p>Sign in and get ready for your next journey.</p>
     </div>
     <?php if ($notice !== ''): ?><p class="message message-success" role="status"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#check"></use></svg></span> <?= h($notice) ?></p><?php endif; ?>
     <?php if ($error !== ''): ?><p class="message message-error" role="alert"><?= h($error) ?></p><?php endif; ?>
@@ -90,7 +97,6 @@ page_start('Driver login', 'login');
       <button class="button button-primary button-submit" type="submit">Sign in <span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#arrow"></use></svg></span></button>
     </form>
     <p class="form-switch">New to the portal? <a href="register.php">Create an account</a></p>
-    <div class="form-security"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false" width="24" height="24"><use href="assets/icons.svg#shield"></use></svg></span> Your information is protected and kept private.</div>
   </div>
 </section>
 <?php page_end(); ?>
