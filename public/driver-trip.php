@@ -2,8 +2,13 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/admin.php';
+require_once __DIR__ . '/../app/driver-routes.php';
 $driver = require_driver();
 $driverId = (int) $driver['id'];
+$routeAssignment = driver_route_assignment($driverId);
+$routeSaved = $routeAssignment !== null
+    && !empty($routeAssignment['route_key'])
+    && (int) ($routeAssignment['route_revision'] ?? 0) > 0;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
@@ -29,11 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirect('driver-trip.php');
             }
 
+            if (!$routeSaved) {
+                $pdo->rollBack();
+                $_SESSION['driver_trip_flash'] = 'Save your route before starting a trip.';
+                redirect('driver-route.php');
+            }
+
             $vehicle = $pdo->prepare(
                 "SELECT j.id AS jeepney_profile_id, r.id AS route_id
                  FROM jeepney_profiles j
                  INNER JOIN jeepney_admin_status js ON js.jeepney_profile_id = j.id
-                 INNER JOIN routes r ON BINARY r.route_name = BINARY j.route_assignment AND r.is_active = 1
+                 INNER JOIN driver_pickup_assignments dpa
+                    ON dpa.driver_id = j.driver_id
+                   AND dpa.route_key <> ''
+                   AND dpa.route_revision > 0
+                 INNER JOIN routes r ON BINARY r.route_name = BINARY dpa.route_name AND r.is_active = 1
                  INNER JOIN drivers d ON d.id = j.driver_id AND d.verification_status = 'verified'
                  LEFT JOIN driver_admin_status ds ON ds.driver_id = d.id
                  WHERE j.driver_id = :driver_id
@@ -161,11 +176,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit('Invalid trip action.');
 }
 
+if (!$routeSaved) {
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $cancelTrips = $pdo->prepare(
+            "UPDATE trips
+             SET trip_status = 'cancelled', ended_at = CURRENT_TIMESTAMP
+             WHERE driver_id = ? AND trip_status = 'active'"
+        );
+        $cancelTrips->execute([$driverId]);
+        $pdo->prepare(
+            "UPDATE driver_trip_status
+             SET status = 'available', revision = revision + 1
+             WHERE driver_id = ? AND status <> 'available'"
+        )->execute([$driverId]);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+}
+
 $tripQuery = db()->prepare(
-    "SELECT t.id, t.started_at, r.route_name, j.plate_number
+    "SELECT t.id, t.started_at, dpa.route_name, j.plate_number
      FROM trips t
-     INNER JOIN routes r ON r.id = t.route_id
      INNER JOIN jeepney_profiles j ON j.id = t.jeepney_profile_id
+     INNER JOIN driver_pickup_assignments dpa
+        ON dpa.driver_id = t.driver_id
+       AND dpa.route_key <> ''
+       AND dpa.route_revision > 0
      WHERE t.driver_id = :driver_id AND t.trip_status = 'active'
      ORDER BY t.started_at DESC LIMIT 1"
 );
@@ -277,6 +319,12 @@ page_start('Trip tracking', 'driver-trip');
           }, {enableHighAccuracy: true, maximumAge: 10000, timeout: 20000});
         })();
         </script>
+      <?php elseif (!$routeSaved): ?>
+        <p class="driver-trip-notice">Save your route before starting a trip.</p>
+        <div class="driver-trip-actions">
+          <button class="button button-primary" type="button" disabled>Start trip &amp; share location</button>
+          <a class="button button-outline" href="map.php#map-pickup-area">Save route</a>
+        </div>
       <?php else: ?>
         <p class="driver-trip-notice">Starting a trip activates location sharing in this browser. You can stop sharing by completing or cancelling the trip. A secure HTTPS connection is required on most mobile browsers.</p>
         <form class="driver-trip-actions" method="post" action="driver-trip.php">

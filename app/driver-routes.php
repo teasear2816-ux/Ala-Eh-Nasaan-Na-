@@ -68,3 +68,47 @@ function save_driver_route_and_pickup(int $driverId, mixed $routeKey, mixed $loc
         return [500, 'Driver setup could not be saved. Please try again.'];
     }
 }
+
+function clear_driver_route_and_pickup(int $driverId, mixed $revision): array
+{
+    $pdo = db();
+    try {
+        $pdo->beginTransaction();
+        $current = driver_route_assignment($driverId);
+        if ($current === null) {
+            $pdo->commit();
+            return [200, 'There is no saved route to clear.'];
+        }
+        if (!is_string($revision) || !ctype_digit($revision) || strlen($revision) > 10
+            || (int) $revision !== (int) ($current['route_revision'] ?? 0)) {
+            $pdo->rollBack();
+            return [409, 'Your saved route changed in another window. Reload the map and try again.'];
+        }
+
+        $delete = $pdo->prepare('DELETE FROM driver_pickup_assignments WHERE driver_id = ? AND route_revision = ?');
+        $delete->execute([$driverId, (int) $current['route_revision']]);
+        if ($delete->rowCount() !== 1) {
+            $pdo->rollBack();
+            return [409, 'Your saved route changed in another window. Reload the map and try again.'];
+        }
+
+        $cancelTrips = $pdo->prepare(
+            "UPDATE trips
+             SET trip_status = 'cancelled', ended_at = CURRENT_TIMESTAMP
+             WHERE driver_id = ? AND trip_status = 'active'"
+        );
+        $cancelTrips->execute([$driverId]);
+        $pdo->prepare(
+            "UPDATE driver_trip_status
+             SET status = 'available', revision = revision + 1
+             WHERE driver_id = ? AND status <> 'available'"
+        )->execute([$driverId]);
+
+        $pdo->commit();
+        return [200, 'Saved route cleared. Set up and save a route before updating available seats.'];
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        error_log((string) $exception);
+        return [500, 'Saved route could not be cleared. Please try again.'];
+    }
+}
